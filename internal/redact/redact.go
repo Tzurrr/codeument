@@ -109,6 +109,7 @@ var (
 	reAuthHeader = regexp.MustCompile(`(?i)(authorization:\s*(?:bearer|basic|token|apikey)?\s*)([^\s"']+)`)
 	reBasicAuth  = regexp.MustCompile(`(\s(?:-u|--user|--proxy-user)[\s=]+)(['"]?)([^:\s'"]+):([^\s'"]+)`)
 	reUserPass   = regexp.MustCompile(`(?i)(\b(?:user(?:name)?|login)\s*[:=]\s*["']?)([A-Za-z0-9._@-]+)(["']?\s*[,;&\s]+\s*(?:pass(?:word)?|pwd)\s*[:=]\s*["']?)([^\s"',;&]+)`)
+	reConfigKV   = regexp.MustCompile(`(?i)(^|[\s"'{,\[])([A-Za-z0-9_.-]*(?:password|passwd|secret|token|api[_-]?key|access[_-]?key|private[_-]?key|credentials?|passphrase)[A-Za-z0-9_.-]*)(\s*:\s+)("[^"]*"|'[^']*'|\S+)`)
 	reGeneric    = regexp.MustCompile(`(?i)\b(token|secret|password|passwd|api[_-]?key|access[_-]?key|private[_-]?key|client[_-]?secret)\b(\s*[:=]\s*["']?)([A-Za-z0-9+/_=.-]{12,})`)
 	reTokens     = []*regexp.Regexp{
 		regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`),
@@ -205,7 +206,17 @@ func (r *Redactor) Redact(cmd string) Result {
 		return m[1] + m[2] + m[3] + mark("password")
 	})
 
-	// 6. Well-known token shapes and generic key=value secrets.
+	// 6. Config-style "key: value" pairs (YAML, ini, compose heads).
+	res.Text = reConfigKV.ReplaceAllStringFunc(res.Text, func(s string) string {
+		m := reConfigKV.FindStringSubmatch(s)
+		if strings.HasPrefix(m[4], "<redacted:") || strings.EqualFold(m[4], "null") || strings.EqualFold(m[4], "true") || strings.EqualFold(m[4], "false") {
+			return s
+		}
+		r.capturef(&res, "config", "", "", unquote(m[4]))
+		return m[1] + m[2] + m[3] + mark("config")
+	})
+
+	// 7. Well-known token shapes and generic key=value secrets.
 	for _, re := range reTokens {
 		res.Text = re.ReplaceAllStringFunc(res.Text, func(s string) string {
 			r.capturef(&res, "token", "", "", s)
@@ -221,7 +232,7 @@ func (r *Redactor) Redact(cmd string) Result {
 		return m[1] + m[2] + mark("secret")
 	})
 
-	// 7. User-defined patterns.
+	// 8. User-defined patterns.
 	for _, re := range r.extra {
 		res.Text = re.ReplaceAllStringFunc(res.Text, func(string) string { return mark("custom") })
 	}

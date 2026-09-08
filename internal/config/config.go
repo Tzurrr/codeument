@@ -252,7 +252,7 @@ func Default() *Config {
 			Interval:             24 * time.Hour,
 			Publish:              true,
 			Dirs:                 SnapshotDirs{Include: []string{}, Exclude: []string{}},
-			CredentialReferences: map[string]string{"default": "vault://infra/{hostname}"},
+			CredentialReferences: map[string]string{"default": "vault://infra/{hostname}/{username}"},
 			DocLocation:          model.Location{Space: "OPS", ParentPath: []string{"Servers"}},
 		},
 		Credentials: Credentials{

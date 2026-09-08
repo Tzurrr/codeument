@@ -83,7 +83,7 @@ client_defaults:
   weights: {}
   extra_patterns: []
   credential_references:
-    default: "vault://infra/{hostname}"
+    default: "vault://infra/{hostname}/{username}"
   min_client_version: ""
 
 limits:

@@ -140,7 +140,7 @@ func TestEnrollAuthAndFlows(t *testing.T) {
 
 	// Reference mode: credentials are never stored, only referenced.
 	r, err := eng.StoreCredential(ctx, secrets.Credential{Host: "web-01", Username: "root", Password: "pw"})
-	if err != nil || r.Mode != secrets.ModeReference || r.Ref != "vault://infra/web-01" || r.Password != "" {
+	if err != nil || r.Mode != secrets.ModeReference || r.Ref != "vault://infra/web-01/root" || r.Password != "" {
 		t.Fatalf("reference: %v %+v", err, r)
 	}
 

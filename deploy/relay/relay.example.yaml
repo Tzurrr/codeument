@@ -40,7 +40,7 @@ client_defaults:
     space: OPS
     parent_path: [Servers]
   credential_references:
-    default: "vault://infra/{hostname}"
+    default: "vault://infra/{hostname}/{username}"
 
 audit:
   store_payloads: false
