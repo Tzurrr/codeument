@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -283,13 +282,8 @@ func disks(e Env, partial Partial) []Disk {
 		seen[f[1]] = true
 		d := Disk{Mount: f[1], Device: f[0], FSType: f[2], Options: f[3]}
 		if e.Root == "/" {
-			var st syscall.Statfs_t
-			if err := syscall.Statfs(f[1], &st); err == nil && st.Blocks > 0 {
-				total := float64(st.Blocks) * float64(st.Bsize)
-				free := float64(st.Bavail) * float64(st.Bsize)
-				d.TotalGB = round1(total / 1e9)
-				d.UsedGB = round1((total - free) / 1e9)
-				d.Percent = round1((total - free) / total * 100)
+			if total, used, pct, ok := diskUsage(f[1]); ok {
+				d.TotalGB, d.UsedGB, d.Percent = total, used, pct
 			}
 		}
 		out = append(out, d)

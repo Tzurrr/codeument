@@ -38,6 +38,8 @@ Edit it or use `codeument config set key value`.
 | `codeument snapshot --publish` | Snapshot this server into its page |
 | `codeument enroll --relay https://relay.corp --code XXXX` | Join a company relay |
 | `codeument relay serve` | Run the relay (IT) |
+| `codeument credentials add --user root` | Record a server password (asked for, never an argument) |
+| `codeument credentials list` / `push` / `forget` | Inspect, sync to the password manager, or wipe the cache |
 
 ## Modes
 
@@ -47,6 +49,27 @@ Edit it or use `codeument config set key value`.
 - **relay**: `codeument enroll` joins a relay on your network. The relay holds the
   LLM and Confluence credentials, pushes shared defaults, and applies the
   company credential policy for server pages. See `docs/RELAY.md`.
+
+## Server pages and credentials
+
+`codeument snapshot --publish` keeps a "Server: hostname" page up to date:
+important folders with an explanation of each, resource usage, services,
+listening ports, scheduled jobs, containers and accounts. It republishes only
+when something material changed.
+
+How the accounts table shows passwords is a policy, set on the relay for the
+whole company (or locally in direct mode):
+
+| `credentials.mode` | The page shows |
+|---|---|
+| `reference` (default) | a reference string such as `vault://infra/web-01/root` |
+| `manager` | a link to the entry codeument created in Vault, 1Password, Bitwarden, or via your webhook |
+| `inline` | the password itself, on a page you can restrict to named groups |
+
+Passwords come from you (`codeument credentials add`, or the masked prompt
+before publishing) and, when `credentials.capture_from_commands` is on, from
+commands the redactor already scrubbed. They live in an encrypted local cache;
+the journal never holds them.
 
 ## Security
 

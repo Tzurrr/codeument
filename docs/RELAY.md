@@ -73,6 +73,35 @@ docker-compose file bundles one); clients then reach a company model without
 any data leaving the network. The relay can be switched between the two at
 any time; clients do not change.
 
+## Credential policy
+
+The relay decides how server pages present passwords, for every enrolled
+client. Set `credentials.mode` to `reference`, `manager` or `inline`, and for
+`manager` pick a provider:
+
+```yaml
+credentials:
+  mode: manager
+  capture_from_commands: false     # let clients cache passwords seen in commands
+  prompt_on_review: true           # ask for missing passwords before publishing
+  manager:
+    provider: vault                # vault | onepassword | bitwarden | webhook
+    vault:
+      address: https://vault.corp:8200
+      auth: approle                # or token
+      role_id: "..."
+      secret_id: "..."
+      mount: secret
+      path_template: "servers/{hostname}/{username}"
+  inline:
+    page_restriction_groups: [ops-admins]   # applied to Confluence pages with inline passwords
+```
+
+Clients pick the policy up from `GET /v1/config` and never see the manager's
+credentials. `codeument relay check` pings the manager along with the LLM and
+docs providers. Switching provider later is a relay-side change; clients
+re-push with `codeument credentials push`.
+
 ## Audit log
 
 `codeument relay audit` shows who called which endpoint, when, with how many

@@ -190,6 +190,46 @@ func TestManagerModeAndVersionGate(t *testing.T) {
 	}
 }
 
+func TestCredentialPolicyRefusals(t *testing.T) {
+	ctx := context.Background()
+
+	// reference mode never stores a password, whatever the client sends.
+	ts, s, _, fs := newTestServer(t, secrets.ModeReference)
+	eng := enroll(t, ts, s, "ref-client")
+	r, err := eng.StoreCredential(ctx, secrets.Credential{Host: "web-01", Username: "root", Password: "pw"})
+	if err != nil || r.Password != "" || len(fs.puts) != 0 {
+		t.Fatalf("reference mode must not store: %v %+v %+v", err, r, fs.puts)
+	}
+
+	// manager mode without a store configured is refused, not silently
+	// downgraded.
+	ts2, s2, _, _ := newTestServer(t, secrets.ModeManager)
+	s2.Policy.Store = nil
+	eng2 := enroll(t, ts2, s2, "broken-client")
+	_, err = eng2.StoreCredential(ctx, secrets.Credential{Host: "web-01", Username: "root", Password: "pw"})
+	var ae *client.APIError
+	if !errors.As(err, &ae) || ae.Status != 403 {
+		t.Fatalf("expected 403 for manager mode without a store, got %v", err)
+	}
+
+	// A credential without a password only asks for the reference string.
+	r, err = eng.StoreCredential(ctx, secrets.Credential{Host: "web-01", Username: "alice"})
+	if err != nil || r.Ref != "vault://infra/web-01/alice" || r.Password != "" {
+		t.Fatalf("reference-only: %v %+v", err, r)
+	}
+	if _, err := eng.StoreCredential(ctx, secrets.Credential{Username: "nohost", Password: "x"}); err == nil {
+		t.Fatal("a credential without a host must be refused")
+	}
+
+	// Inline mode hands the password back for the page to render.
+	ts3, s3, _, _ := newTestServer(t, secrets.ModeInline)
+	eng3 := enroll(t, ts3, s3, "inline-client")
+	r, err = eng3.StoreCredential(ctx, secrets.Credential{Host: "web-01", Username: "root", Password: "pw"})
+	if err != nil || r.Mode != secrets.ModeInline || r.Password != "pw" {
+		t.Fatalf("inline: %v %+v", err, r)
+	}
+}
+
 func TestRateLimitAndBodyLimit(t *testing.T) {
 	ts, s, _, _ := newTestServer(t, secrets.ModeReference)
 	s.limiter = newLimiter(0.0001, 2)

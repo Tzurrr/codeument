@@ -132,6 +132,9 @@ func (a *App) runSnapshot(ctx context.Context, cmd *cobra.Command, w *worker.Wor
 		return run, nil
 	}
 
+	if err := a.promptForAccounts(cmd, cfg, a.credentialPolicy(ctx, cfg, w), s); err != nil {
+		return nil, err
+	}
 	doc, err := a.serverDocument(ctx, w, cfg, store, s)
 	if err != nil {
 		return nil, err
