@@ -1,0 +1,7 @@
+[Unit]
+Description=codeument periodic tick (close idle batches, summarize, snapshot)
+
+[Service]
+Type=oneshot
+ExecStart={{.Binary}} tick --quiet{{.ConfigFlag}}
+Nice=10

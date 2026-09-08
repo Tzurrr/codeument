@@ -1,0 +1,57 @@
+## Context
+host: {{.Hostname}}
+user: {{.Username}}
+shell: {{.Shell}}
+window: {{.Window}}
+session: {{.SessionID}}
+{{- if .Repos}}
+repositories:
+{{- range .Repos}}
+- {{.}}
+{{- end}}
+{{- end}}
+working directories (in order): {{join .CWDs ", "}}
+{{- if .Note}}
+
+## Note from the user
+{{.Note}}
+{{- end}}
+
+## Commands
+Format: [seq] time exit=code duration cwd command
+{{range .Lines}}{{.}}
+{{end}}
+{{- if .FilesTouched}}
+## Files touched
+{{range .FilesTouched}}- {{.}}
+{{end}}
+{{- end}}
+{{- if .GitLog}}
+## Git commits in this window
+{{.GitLog}}
+{{- end}}
+{{- if .GitDiffStat}}
+## Git diff stat (file names and line counts only)
+{{.GitDiffStat}}
+{{- end}}
+{{- if .RecentDocs}}
+## Recent documents from this host (id: title)
+{{range .RecentDocs}}- {{.ID}}: {{.Title}}
+{{end}}
+{{- end}}
+## Documentation defaults
+space: {{.DefaultLocation.Space}}
+parent path: {{join .DefaultLocation.ParentPath " / "}}
+{{- if .Hints}}
+hints:
+{{range .Hints}}- {{.}}
+{{end}}
+{{- end}}
+{{- if .PreviousDraft}}
+
+## Previous draft (regenerate it following the instruction below)
+{{.PreviousDraft}}
+
+## Instruction
+{{.Instruction}}
+{{- end}}

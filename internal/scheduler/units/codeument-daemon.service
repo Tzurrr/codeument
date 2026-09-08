@@ -1,0 +1,13 @@
+[Unit]
+Description=codeument daemon (periodic tick loop)
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart={{.Binary}} daemon --interval {{.IntervalSeconds}}s{{.ConfigFlag}}
+Restart=on-failure
+RestartSec=30
+Nice=10
+
+[Install]
+WantedBy=multi-user.target default.target

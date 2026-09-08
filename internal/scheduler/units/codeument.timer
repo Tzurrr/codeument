@@ -1,0 +1,11 @@
+[Unit]
+Description=Run codeument tick every {{.Interval}}
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec={{.Interval}}
+RandomizedDelaySec=30
+Persistent=true
+
+[Install]
+WantedBy=timers.target
