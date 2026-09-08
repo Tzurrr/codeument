@@ -1,0 +1,47 @@
+# Example relay config for the docker-compose setup. Inside the container the
+# relay serves plain HTTP on 0.0.0.0:8443; put a TLS-terminating proxy
+# (Caddy, nginx, Traefik) in front of it on the LAN, or set tls.cert/tls.key
+# and mount the certificate files.
+listen: 0.0.0.0:8443
+insecure_http: true
+db_path: /var/lib/codeument/relay.db
+
+llm:
+  provider: anthropic   # or ollama (see docker-compose.yml)
+  anthropic:
+    api_key: ""         # or leave empty and pass ANTHROPIC_API_KEY to the container
+    model: claude-opus-5
+  ollama:
+    base_url: http://ollama:11434
+    model: qwen2.5:14b
+
+docs:
+  provider: markdown    # switch to confluence once you have an API token
+  markdown:
+    root: /var/lib/codeument/docs
+  confluence:
+    base_url: https://acme.atlassian.net/wiki
+    email: bot@acme.example
+    api_token: ""
+    space: OPS
+  default_location:
+    space: OPS
+    parent_path: [Runbooks]
+
+credentials:
+  mode: reference       # reference | manager | inline
+  manager:
+    provider: ""        # vault | onepassword | bitwarden | webhook
+
+client_defaults:
+  hints:
+    - "Runbooks live under OPS / Runbooks; server pages under OPS / Servers."
+  snapshot_location:
+    space: OPS
+    parent_path: [Servers]
+  credential_references:
+    default: "vault://infra/{hostname}"
+
+audit:
+  store_payloads: false
+  retention_days: 90

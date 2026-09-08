@@ -60,6 +60,14 @@ func RelayConfigPath() string {
 	return "/etc/codeument/relay.yaml"
 }
 
+// SystemRelayTokenPath is where the system-scope relay token lives.
+func SystemRelayTokenPath() string {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(os.Getenv("ProgramData"), "codeument", "relay-token")
+	}
+	return "/etc/codeument/relay-token"
+}
+
 // DefaultDataDir is where the journal and state live unless configured.
 func DefaultDataDir() string {
 	if v := os.Getenv(EnvDataDir); v != "" {

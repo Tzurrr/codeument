@@ -1,0 +1,31 @@
+# Development relay: the relay plus an Ollama instance it can use as its LLM.
+# Copy relay.example.yaml to ./config/relay.yaml first and adjust it.
+services:
+  relay:
+    build:
+      context: ../..
+      dockerfile: deploy/relay/Dockerfile
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./config:/etc/codeument
+      - ./data:/var/lib/codeument
+    environment:
+      # Uncomment to use the bundled Ollama instead of Claude.
+      # CODEUMENT_RELAY_LLM_PROVIDER: ollama
+      # CODEUMENT_RELAY_OLLAMA_BASE_URL: http://ollama:11434
+      # CODEUMENT_RELAY_OLLAMA_MODEL: qwen2.5:14b
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama:/root/.ollama
+    # Pull a model once:  docker compose exec ollama ollama pull qwen2.5:14b
+    restart: unless-stopped
+
+volumes:
+  ollama:

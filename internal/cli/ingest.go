@@ -104,11 +104,26 @@ func (a *App) ingest(cmd *cobra.Command, store *journal.Store, cfg *config.Confi
 		return err
 	}
 
-	redactor, err := redact.New(redact.Options{
-		ExtraPatterns:          cfg.Redact.ExtraPatterns,
-		ExtraSensitiveCommands: cfg.Redact.ExtraSensitiveCommands,
-		Capture:                cfg.Credentials.CaptureFromCommands,
-	})
+	// Relay defaults (cached by tick/enroll) are merged under the local config.
+	ropts := redact.Options{ExtraPatterns: cfg.Redact.ExtraPatterns, ExtraSensitiveCommands: cfg.Redact.ExtraSensitiveCommands, Capture: cfg.Credentials.CaptureFromCommands}
+	copts := classify.Options{Ignore: cfg.Capture.Ignore, Unignore: cfg.Capture.Unignore, Weights: cfg.Capture.Weights}
+	if cfg.Mode == config.ModeRelay {
+		if d := cachedDefaults(c, store); d != nil {
+			ropts.ExtraPatterns = append(append([]string{}, d.ExtraPatterns...), ropts.ExtraPatterns...)
+			ropts.Capture = ropts.Capture || d.CaptureCreds
+			copts.Ignore = append(append([]string{}, d.Ignore...), copts.Ignore...)
+			copts.Unignore = append(append([]string{}, d.Unignore...), copts.Unignore...)
+			merged := map[string]int{}
+			for k, v := range d.Weights {
+				merged[k] = v
+			}
+			for k, v := range copts.Weights {
+				merged[k] = v
+			}
+			copts.Weights = merged
+		}
+	}
+	redactor, err := redact.New(ropts)
 	if err != nil {
 		slog.Warn("redact config invalid, using defaults", "err", err)
 		redactor = redact.Default
@@ -118,7 +133,7 @@ func (a *App) ingest(cmd *cobra.Command, store *journal.Store, cfg *config.Confi
 		a.storeCaptured(cmd, cfg, host, red.Captured)
 	}
 
-	cls := classify.New(classify.Options{Ignore: cfg.Capture.Ignore, Unignore: cfg.Capture.Unignore, Weights: cfg.Capture.Weights}).Classify(red.Text, rec.CWD)
+	cls := classify.New(copts).Classify(red.Text, rec.CWD)
 	if cls.Kind == model.KindNoise && !cfg.Capture.StoreNoise {
 		return nil
 	}

@@ -1,0 +1,99 @@
+# codeument relay configuration.
+# Generated with defaults. The relay holds the LLM and documentation
+# credentials for the company; clients enroll with a one-time code.
+
+# Where to listen. The default binds loopback only; to serve the LAN set
+# tls.cert/tls.key (or terminate TLS in a reverse proxy and set
+# insecure_http: true deliberately).
+listen: 127.0.0.1:8443
+tls:
+  cert: ""
+  key: ""
+  # Optional: require client certificates signed by this CA (mTLS).
+  client_ca: ""
+insecure_http: false
+
+db_path: /var/lib/codeument/relay.db
+
+llm:
+  provider: anthropic # anthropic | ollama
+  anthropic:
+    api_key: ""
+    model: claude-opus-5
+    max_tokens: 8000
+    fallbacks: true
+  ollama:
+    base_url: http://127.0.0.1:11434
+    model: qwen2.5:14b
+    num_ctx: 16384
+
+docs:
+  provider: markdown # markdown | confluence
+  markdown:
+    root: /var/lib/codeument/docs
+  confluence:
+    base_url: ""
+    email: ""
+    api_token: ""
+    space: OPS
+  default_location:
+    space: OPS
+    parent_path: [Runbooks]
+
+# Company credential policy for server pages: reference | manager | inline.
+credentials:
+  mode: reference
+  capture_from_commands: false
+  prompt_on_review: true
+  manager:
+    provider: "" # vault | onepassword | bitwarden | webhook
+    vault:
+      address: ""
+      token: ""
+      auth: token
+      role_id: ""
+      secret_id: ""
+      mount: secret
+      path_template: "servers/{hostname}/{username}"
+    onepassword:
+      connect_url: ""
+      token: ""
+      vault_id: ""
+      title_template: "{hostname} / {username}"
+    bitwarden:
+      server_url: ""
+      access_token: ""
+      organization_id: ""
+      project_id: ""
+    webhook:
+      url: ""
+      bearer_token: ""
+      timeout: 10s
+  inline:
+    page_restriction_groups: []
+
+# Defaults pushed to every client (merged under their local config).
+client_defaults:
+  hints: []
+  snapshot_location:
+    space: OPS
+    parent_path: [Servers]
+  ignore: []
+  unignore: []
+  weights: {}
+  extra_patterns: []
+  credential_references:
+    default: "vault://infra/{hostname}"
+  min_client_version: ""
+
+limits:
+  max_body_bytes: 2097152
+  requests_per_second: 2
+  burst: 10
+
+audit:
+  # Store request payloads (commands) in the audit log. Off by default.
+  store_payloads: false
+  retention_days: 90
+
+log_level: info
