@@ -25,6 +25,7 @@ working directories (in order): /etc/nginx
 
 ## Commands
 Format: [seq] time exit=code duration cwd command
+Lines marked (context) are navigation, inspection or shell setup. Use them to understand what happened; do not document them as steps.
 [1] 10:00:00 exit=0 1.0s /etc/nginx vim /etc/nginx/nginx.conf
 [2] 10:01:00 exit=1 200ms /etc/nginx nginx -t
 [3] 10:02:00 exit=0 100ms /etc/nginx sudo systemctl reload nginx

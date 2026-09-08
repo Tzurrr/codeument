@@ -19,6 +19,7 @@ working directories (in order): {{join .CWDs ", "}}
 
 ## Commands
 Format: [seq] time exit=code duration cwd command
+Lines marked (context) are navigation, inspection or shell setup. Use them to understand what happened; do not document them as steps.
 {{range .Lines}}{{.}}
 {{end}}
 {{- if .FilesTouched}}

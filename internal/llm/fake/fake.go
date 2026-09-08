@@ -59,6 +59,9 @@ func (p *Provider) GenerateJSON(_ context.Context, req llm.Request) (*llm.Respon
 
 var reCommand = regexp.MustCompile(`(?m)^\s*\[\d+\]\s+\S+\s+exit=(\d+)\s+\S+\s+\S+\s+(.+)$`)
 
+// isContext reports whether a prompt line is marked as context (noise).
+func isContext(cmd string) bool { return strings.HasPrefix(cmd, "(context) ") }
+
 // defaultResponse builds a plausible draft from the commands in the prompt so
 // end-to-end tests exercise the real pipeline.
 func defaultResponse(req llm.Request) (json.RawMessage, error) {
@@ -67,7 +70,11 @@ func defaultResponse(req llm.Request) (json.RawMessage, error) {
 	}
 	var cmds []string
 	for _, m := range reCommand.FindAllStringSubmatch(req.User, -1) {
-		cmds = append(cmds, strings.TrimSpace(m[2]))
+		cmd := strings.TrimSpace(m[2])
+		if isContext(cmd) {
+			continue
+		}
+		cmds = append(cmds, cmd)
 	}
 	title := "Shell work"
 	if len(cmds) > 0 {

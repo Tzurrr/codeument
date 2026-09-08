@@ -109,7 +109,11 @@ func BuildPrompt(in Input) (system, user, hash string, err error) {
 				data.FilesTouched = append(data.FilesTouched, f)
 			}
 		}
-		data.Lines = append(data.Lines, fmt.Sprintf("[%d] %s exit=%d %s %s %s", e.Seq, e.Start.Format("15:04:05"), e.ExitCode, humanDur(e.Duration()), shortCWD(e.CWD), strings.ReplaceAll(e.Command, "\n", " ")))
+		marker := ""
+		if e.Kind == model.KindNoise {
+			marker = "(context) "
+		}
+		data.Lines = append(data.Lines, fmt.Sprintf("[%d] %s exit=%d %s %s %s%s", e.Seq, e.Start.Format("15:04:05"), e.ExitCode, humanDur(e.Duration()), shortCWD(e.CWD), marker, strings.ReplaceAll(e.Command, "\n", " ")))
 	}
 	if in.PreviousDraft != nil {
 		b, _ := json.MarshalIndent(in.PreviousDraft, "", "  ")

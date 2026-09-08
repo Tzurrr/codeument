@@ -76,6 +76,11 @@ var defaultNoise = []string{
 	"fc", "bind", "logout", "read", "test", "[", "ping", "dig", "nslookup", "host", "ip", "ifconfig", "netstat", "ss",
 	"lsof", "ncdu", "less", "vimdiff", "diff", "cmp", "md5sum", "sha256sum", "base64", "xxd", "hexdump", "strings",
 	"awk", "sed", "grep", "egrep", "fgrep", "rg", "ag", "ack", "sort", "uniq", "cut", "tr", "column", "jq", "yq",
+	// Shell plumbing: `eval "$(tool hook zsh)"`, completion setup, prompt
+	// frameworks. These configure the session, they are not the work.
+	"eval", "builtin", "declare", "typeset", "local", "let", "shopt", "setopt", "trap", "bind", "hash",
+	"complete", "compgen", "compdef", "autoload", "zstyle", "bindkey", "ulimit", "umask", "wait", "disown",
+	"nvm", "rbenv", "pyenv", "asdf", "direnv", "starship", "atuin", "zoxide", "fzf",
 	"xargs", "tee", "nl", "rev", "paste", "join", "comm", "seq", "yes", "basename", "dirname", "realpath", "readlink",
 }
 

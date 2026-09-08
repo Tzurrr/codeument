@@ -42,6 +42,10 @@ func TestClassify(t *testing.T) {
 		{"cat foo | grep bar | sort", model.KindNoise, "noise", 0, false, nil},
 		{"ENV=prod ./deploy.sh", model.KindMeaningful, "other", 1, false, nil},
 		{"tail -f /var/log/nginx/error.log", model.KindNoise, "noise", 0, false, nil},
+		// Shell setup lines are plumbing, not documentable work.
+		{`eval "$(codeument hook bash)"`, model.KindNoise, "noise", 0, false, nil},
+		{`eval "$(direnv hook zsh)"`, model.KindNoise, "noise", 0, false, nil},
+		{"autoload -Uz compinit", model.KindNoise, "noise", 0, false, nil},
 	}
 	for _, c := range cases {
 		got := Default.Classify(c.cmd, "/srv/app")
