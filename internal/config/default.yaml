@@ -1,0 +1,138 @@
+# codeument client configuration.
+# This file was generated with defaults. Edit it freely; codeument reads it on
+# every run. Values can be overridden with CODEUMENT_<SECTION>_<KEY> env vars,
+# e.g. CODEUMENT_LLM_ANTHROPIC_API_KEY. Secret values may point at a file with
+# file:///path/to/secret.
+
+# local  = capture only, nothing leaves the machine (safe default)
+# direct = this client talks to the LLM and the documentation platform itself
+# relay  = this client talks to a company relay that holds the credentials
+mode: local
+
+relay:
+  url: ""
+  token_file: ~/.config/codeument/relay-token
+  ca_file: ""
+
+capture:
+  # Keep noise commands (ls, cd, cat, ...) in the local journal as context.
+  store_noise: true
+  # Extra programs to treat as noise, and defaults to un-ignore.
+  ignore: []
+  unignore: []
+  # Override weights by command prefix, e.g. { "kubectl apply": 5 }.
+  weights: {}
+
+redact:
+  # Extra regular expressions whose matches are replaced before storage.
+  extra_patterns: []
+  # Extra programs whose whole argument list is redacted.
+  extra_sensitive_commands: []
+
+triggers:
+  # Gap of inactivity that closes the current batch.
+  idle_gap: 20m
+  # Summarize once the batch score reaches this value ...
+  score_threshold: 8
+  # ... or once it holds this many meaningful commands ...
+  meaningful_count: 6
+  # ... or this long after the first meaningful command.
+  timer: 45m
+  # Minimum time between two summaries of the same shell session.
+  min_interval: 10m
+  # Let deploy-like commands (git push, terraform apply, ...) trigger early.
+  milestones: true
+
+notify:
+  # line = print a one-line notice at the next shell prompt; silent = nothing
+  style: line
+
+# Used only in direct mode. In relay mode the relay owns these settings.
+llm:
+  provider: anthropic # anthropic | ollama
+  anthropic:
+    api_key: ""
+    model: claude-opus-5
+    max_tokens: 8000
+    # Route safety refusals to a fallback model inside the same call.
+    fallbacks: true
+  ollama:
+    base_url: http://127.0.0.1:11434
+    model: qwen2.5:14b
+    num_ctx: 16384
+
+# Used only in direct mode. In relay mode the relay owns these settings.
+docs:
+  provider: markdown # markdown | confluence
+  markdown:
+    root: ~/Documents/codeument-docs
+  confluence:
+    base_url: ""
+    email: ""
+    api_token: ""
+    space: OPS
+  default_location:
+    space: OPS
+    parent_path: [Runbooks]
+
+# Hints handed to the LLM: naming conventions, glossary, team context.
+hints: []
+
+snapshot:
+  enabled: false
+  interval: 24h
+  publish: true
+  dirs:
+    include: []
+    exclude: []
+  # Where the password for an account is kept, by username or "default".
+  credential_references:
+    default: "vault://infra/{hostname}"
+  doc_location:
+    space: OPS
+    parent_path: [Servers]
+
+# How passwords for server accounts are handled. In relay mode the relay's
+# policy wins. reference = show only a reference string, manager = push to the
+# company password manager and link to it, inline = write the password on the
+# server page.
+credentials:
+  mode: reference
+  capture_from_commands: false
+  prompt_on_review: true
+  manager:
+    provider: "" # vault | onepassword | bitwarden | webhook
+    vault:
+      address: ""
+      token: ""
+      auth: token # token | approle
+      role_id: ""
+      secret_id: ""
+      mount: secret
+      path_template: "servers/{hostname}/{username}"
+    onepassword:
+      connect_url: ""
+      token: ""
+      vault_id: ""
+      title_template: "{hostname} / {username}"
+    bitwarden:
+      server_url: ""
+      access_token: ""
+      organization_id: ""
+      project_id: ""
+    webhook:
+      url: ""
+      bearer_token: ""
+      timeout: 10s
+  inline:
+    page_restriction_groups: []
+
+retention:
+  # Events older than this are pruned by `codeument tick`.
+  events: 2160h
+
+# Editor used by `codeument review`; falls back to $VISUAL, $EDITOR, vi.
+editor: ""
+
+data_dir: ~/.local/share/codeument
+log_level: info

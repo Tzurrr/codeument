@@ -1,0 +1,47 @@
+version: "2"
+run:
+  timeout: 5m
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - ineffassign
+    - unused
+    - gosec
+    - revive
+    - misspell
+  settings:
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - fmt.Sscanf
+        - (*database/sql.Rows).Close
+        - (*os.File).Close
+    gosec:
+      excludes:
+        - G104 # duplicate of errcheck
+        - G202 # SQL concatenation: where clauses are built from a fixed condition set with bound args
+        - G204 # subprocess launched with variable: we run our own binary and user-configured editors
+        - G301 # directory perms: rc-file parents are user-owned
+        - G302 # file perms: rc files are 0644 by convention
+        - G304 # file inclusion via variable: paths come from config
+        - G306 # WriteFile perms: we write 0600/0644 deliberately
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
+formatters:
+  enable:
+    - gofmt
