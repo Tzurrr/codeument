@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Tzurrr/codeument/internal/config"
+	_ "github.com/Tzurrr/codeument/internal/docs/confluence" // register for the relay
 	"github.com/Tzurrr/codeument/internal/engine"
 	"github.com/Tzurrr/codeument/internal/journal"
 	"github.com/Tzurrr/codeument/internal/paths"

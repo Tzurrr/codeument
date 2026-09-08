@@ -10,6 +10,7 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/google/uuid v1.6.0
 	github.com/spf13/cobra v1.9.1
+	github.com/yuin/goldmark v1.7.13
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.38.2
 )

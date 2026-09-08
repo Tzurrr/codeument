@@ -1,0 +1,35 @@
+<p>Rotated the certificate and reloaded nginx.</p>
+<p><strong>Why:</strong> the old one expired.</p>
+<h2>Steps</h2>
+<ol>
+<li>
+<p>Renew</p>
+<ac:structured-macro ac:name="code" ac:schema-version="1"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[certbot renew --nginx
+echo "]]]]><![CDATA[> tricky"]]></ac:plain-text-body></ac:structured-macro></li>
+<li>
+<p>Reload the service</p>
+</li>
+</ol>
+<h2>Checks</h2>
+<ul>
+<li>&#9745; nginx -t passes</li>
+<li>&#9744; monitoring green</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Host</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>web-01</td>
+<td>ok</td>
+</tr>
+</tbody>
+</table>
+<p>Line one
+line two with a  and <em>emphasis</em> and a <a href="https://example.com">link</a>.</p>
+<hr />
+<p><em>Recorded by codeument.</em></p>

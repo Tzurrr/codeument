@@ -9,6 +9,7 @@ import (
 
 	"github.com/Tzurrr/codeument/internal/config"
 	"github.com/Tzurrr/codeument/internal/docs"
+	"github.com/Tzurrr/codeument/internal/docs/confluence"
 	_ "github.com/Tzurrr/codeument/internal/docs/fake"     // register
 	_ "github.com/Tzurrr/codeument/internal/docs/markdown" // register
 	"github.com/Tzurrr/codeument/internal/engine"
@@ -48,6 +49,15 @@ func (a *App) buildEngine(cfg *config.Config) (engine.Engine, error) {
 	dp, err := docs.New(docsConfig(cfg))
 	if err != nil {
 		return nil, err
+	}
+	if cp, ok := dp.(*confluence.Provider); ok && a.store != nil {
+		if pages, err := a.store.ListDocPages(context.Background()); err == nil {
+			for _, pg := range pages {
+				if pg.Provider == "confluence" {
+					cp.Remember(pg.DocID, pg.ProviderPageID)
+				}
+			}
+		}
 	}
 	pol := secrets.Policy{Mode: cfg.Credentials.Mode, CaptureFromCommands: cfg.Credentials.CaptureFromCommands, PromptOnReview: cfg.Credentials.PromptOnReview, References: cfg.Snapshot.CredentialReferences, RestrictGroups: cfg.Credentials.Inline.PageRestrictionGroups}
 	if cfg.Credentials.Manager.Provider != "" && newSecretsStore != nil {
